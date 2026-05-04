@@ -97,6 +97,11 @@ def merge():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/manual')
+def manual():
+    return render_template('manual.html')
+
+
 @app.route('/download/template')
 def download_template():
     if not DEFAULT_TEMPLATE.exists():

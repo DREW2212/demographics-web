@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operations Manual — AGI Analytics</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      line-height: 1.7;
+    }
+
+    .layout { display: flex; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px; min-width: 260px;
+      background: #1a1a2e; color: #cbd5e1;
+      padding: 32px 0;
+      position: sticky; top: 0; height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-title {
+      font-size: .75rem; font-weight: 700; letter-spacing: .1em;
+      color: #64748b; text-transform: uppercase;
+      padding: 0 24px 16px;
+    }
+    .sidebar a {
+      display: block; padding: 7px 24px;
+      color: #94a3b8; text-decoration: none;
+      font-size: .85rem; transition: all .15s;
+      border-left: 3px solid transparent;
+    }
+    .sidebar a:hover { color: #fff; background: rgba(255,255,255,.05); }
+    .sidebar a.active { color: #fff; border-left-color: #4f46e5; background: rgba(79,70,229,.15); }
+    .sidebar .section-header {
+      padding: 18px 24px 6px;
+      font-size: .7rem; font-weight: 700; letter-spacing: .08em;
+      color: #475569; text-transform: uppercase;
+    }
+    .sidebar .back-link {
+      padding: 0 24px 24px;
+      display: block;
+    }
+    .sidebar .back-link a {
+      color: #4f46e5; font-size: .82rem; padding: 0; border: none; background: none;
+    }
+
+    /* Main content */
+    .content {
+      flex: 1; padding: 48px 64px;
+      max-width: 900px;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .content { padding: 24px 20px; }
+    }
+
+    /* Typography */
+    h1 { font-size: 2rem; color: #1a1a2e; margin-bottom: 8px; }
+    h2 { font-size: 1.4rem; color: #1a1a2e; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid #e5e7eb; }
+    h3 { font-size: 1.05rem; color: #374151; margin: 28px 0 10px; }
+    h4 { font-size: .9rem; color: #4f46e5; margin: 20px 0 8px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+    p { margin-bottom: 14px; color: #374151; }
+    ul, ol { margin: 10px 0 16px 24px; color: #374151; }
+    li { margin-bottom: 6px; }
+    strong { color: #1a1a2e; }
+    code {
+      background: #f1f5f9; border: 1px solid #e2e8f0;
+      border-radius: 4px; padding: 2px 6px;
+      font-family: 'Courier New', monospace; font-size: .85em;
+      color: #4f46e5;
+    }
+    pre {
+      background: #1e293b; color: #e2e8f0; border-radius: 10px;
+      padding: 20px; margin: 16px 0; overflow-x: auto;
+      font-family: 'Courier New', monospace; font-size: .85rem; line-height: 1.6;
+    }
+
+    /* Cards */
+    .card {
+      background: #fff; border-radius: 12px;
+      padding: 24px 28px; margin: 20px 0;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      border: 1px solid #e5e7eb;
+    }
+    .card-title { font-weight: 700; color: #1a1a2e; margin-bottom: 12px; font-size: 1rem; }
+
+    /* Alert boxes */
+    .alert {
+      border-radius: 10px; padding: 16px 20px; margin: 16px 0;
+      font-size: .9rem;
+    }
+    .alert-warning { background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; }
+    .alert-info    { background: #eff6ff; border: 1px solid #93c5fd; color: #1e40af; }
+    .alert-success { background: #f0fdf4; border: 1px solid #86efac; color: #166534; }
+    .alert-danger  { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+    .alert strong  { color: inherit; }
+
+    /* Table */
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: .88rem; }
+    th { background: #f8fafc; color: #374151; font-weight: 700; text-align: left; padding: 10px 14px; border: 1px solid #e5e7eb; }
+    td { padding: 9px 14px; border: 1px solid #e5e7eb; color: #374151; vertical-align: top; }
+    tr:nth-child(even) td { background: #fafafa; }
+
+    /* Badges */
+    .badge {
+      display: inline-block; padding: 2px 10px; border-radius: 20px;
+      font-size: .75rem; font-weight: 700;
+    }
+    .badge-green  { background: #d1fae5; color: #065f46; }
+    .badge-yellow { background: #fef9c3; color: #854d0e; }
+    .badge-red    { background: #fee2e2; color: #991b1b; }
+    .badge-blue   { background: #dbeafe; color: #1e40af; }
+
+    /* Steps */
+    .steps { counter-reset: step; }
+    .step {
+      display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start;
+    }
+    .step-num {
+      counter-increment: step;
+      min-width: 32px; height: 32px;
+      background: #4f46e5; color: #fff;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: .85rem; margin-top: 2px;
+    }
+    .step-num::before { content: counter(step); }
+    .step-content { flex: 1; }
+
+    /* Page header */
+    .page-header {
+      background: #fff; border-bottom: 1px solid #e5e7eb;
+      padding: 24px 0 20px; margin-bottom: 0;
+    }
+    .subtitle { color: #6b7280; font-size: .95rem; margin-top: 4px; }
+    .updated { font-size: .8rem; color: #9ca3af; margin-top: 8px; }
+
+    /* Print */
+    @media print {
+      .sidebar { display: none; }
+      .content { padding: 24px; }
+      h2 { page-break-before: always; }
+    }
+
+    /* Anchor offset for sticky header */
+    [id] { scroll-margin-top: 24px; }
+  </style>
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- SIDEBAR NAV -->
+  <nav class="sidebar">
+    <div class="sidebar-title">Operations Manual</div>
+    <div class="back-link"><a href="/">← Back to Tool</a></div>
+
+    <div class="section-header">Part 1 — Senior Housing Bot</div>
+    <a href="#shb-overview">Overview</a>
+    <a href="#shb-run">How to Run It</a>
+    <a href="#shb-operators">The 8 Operators</a>
+    <a href="#shb-scraping">How Scraping Works</a>
+    <a href="#shb-tabs">Application Tabs</a>
+    <a href="#shb-files">Where Files Are Saved</a>
+    <a href="#shb-accounts">Accounts &amp; Keys</a>
+
+    <div class="section-header">Part 2 — Demographics Website</div>
+    <a href="#web-overview">Overview</a>
+    <a href="#web-how">How to Use It</a>
+    <a href="#web-backend">How It Works (Backend)</a>
+    <a href="#web-hosting">Hosting &amp; Deployment</a>
+    <a href="#web-accounts">Accounts Needed</a>
+    <a href="#web-changes">Making Changes</a>
+
+    <div class="section-header">Part 3 — Handoff Checklist</div>
+    <a href="#handoff-accounts">Accounts to Transfer</a>
+    <a href="#handoff-files">Files to Transfer</a>
+    <a href="#handoff-checklist">Full Checklist</a>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="content">
+
+    <div class="page-header">
+      <h1>Operations Manual</h1>
+      <p class="subtitle">AGI Analytics Dashboard &amp; Demographics Merge Tool</p>
+      <p class="updated">Last updated: May 2026 &nbsp;|&nbsp; Prepared by Drew Dahlberg</p>
+    </div>
+
+    <div class="alert alert-info" style="margin-top:24px">
+      <strong>Purpose of this document:</strong> This manual covers everything your team needs to understand, operate, and maintain the Senior Housing Bot desktop application and the Demographics Merge website after the original developer's departure.
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!--  PART 1 — SENIOR HOUSING BOT                               -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <h2 id="shb-overview">Part 1 — Senior Housing Bot</h2>
+
+    <h3>What Is It?</h3>
+    <p>The <strong>AGI Analytics Dashboard</strong> (also called the Senior Housing Bot) is a Windows desktop application built in Python. It has one core job: automatically pull data on senior living communities from 8 major operators' websites, track changes over time, display everything on an interactive map, and help identify market opportunities using US Census demographic data.</p>
+    <p>Think of it as a live database of your competitors — every time you run a scrape, it captures what communities they operate, where they are, and flags anything new or removed since the last run.</p>
+
+    <h3>What Does It Actually Do?</h3>
+    <ul>
+      <li><strong>Scrapes 8 senior living operators</strong> and collects community names, addresses, phone numbers, URLs, and amenities</li>
+      <li><strong>Geocodes every address</strong> (converts street addresses into GPS coordinates) so they appear correctly on the map</li>
+      <li><strong>Tracks changes</strong> over time — when a new community opens or closes, it's flagged automatically</li>
+      <li><strong>Shows everything on an interactive Mapbox map</strong> with color-coded markers per operator</li>
+      <li><strong>Ranks markets</strong> by opportunity score using Census demographic data (age 75+, income, home values)</li>
+      <li><strong>Merges demographic reports</strong> (1-mile, 3-mile, 5-mile radius) into a single formatted Excel workbook</li>
+      <li><strong>Manages Offering Memorandums (OMs)</strong> — upload PDFs and pin them to the map</li>
+    </ul>
+
+    <!-- HOW TO RUN -->
+    <h2 id="shb-run">How to Run the Senior Housing Bot</h2>
+
+    <h3>Option A — Run the Executable (Easiest)</h3>
+    <p>A pre-built Windows executable is located at:</p>
+    <pre>C:\Users\drewd\OneDrive\Desktop\Senior Housing Bot\dist\AGI_Analytics_Dashboard_v22\AGI_Analytics_Dashboard_v22.exe</pre>
+    <p>Double-click the <code>.exe</code> to launch. <strong>Important:</strong> The entire <code>AGI_Analytics_Dashboard_v22</code> folder must stay together — do not move just the .exe file on its own.</p>
+
+    <h3>Option B — Run from Source Code (For Developers)</h3>
+    <p>Requires Python 3.10+ installed on the computer.</p>
+    <div class="steps">
+      <div class="step"><div class="step-num"></div><div class="step-content">Install Python 3.10 from <strong>python.org</strong> (check "Add to PATH" during install)</div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content">Open a terminal in the Senior Housing Bot folder</div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content">Run: <code>pip install -r requirements.txt</code></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content">Run: <code>python senior_housing_bot.py</code></div></div>
+    </div>
+
+    <div class="alert alert-warning">
+      <strong>First launch:</strong> The app will ask for a Mapbox token if one isn't saved. See the Accounts section below for where to find it.
+    </div>
+
+    <!-- THE 8 OPERATORS -->
+    <h2 id="shb-operators">The 8 Operators</h2>
+    <p>The app automatically pulls data from these senior living companies:</p>
+
+    <table>
+      <tr>
+        <th>Operator</th>
+        <th>Method</th>
+        <th>Status</th>
+        <th>Notes</th>
+      </tr>
+      <tr>
+        <td><strong>Merrill Gardens</strong></td>
+        <td>G5 Marketing API</td>
+        <td><span class="badge badge-green">Fully Working</span></td>
+        <td>Most stable — uses a direct API</td>
+      </tr>
+      <tr>
+        <td><strong>Sunrise Senior Living</strong></td>
+        <td>Coveo Search API + Selenium</td>
+        <td><span class="badge badge-green">Fully Working</span></td>
+        <td>Extracts an auth token automatically; token is cached to speed up future runs</td>
+      </tr>
+      <tr>
+        <td><strong>Arbor Company</strong></td>
+        <td>HTML page parsing</td>
+        <td><span class="badge badge-green">Fully Working</span></td>
+        <td>Reads location data embedded in the website's JavaScript</td>
+      </tr>
+      <tr>
+        <td><strong>Brightview Senior Living</strong></td>
+        <td>Selenium + network interception</td>
+        <td><span class="badge badge-green">Fully Working</span></td>
+        <td>Uses a headless Chrome browser to capture the API response</td>
+      </tr>
+      <tr>
+        <td><strong>Stellar Living</strong></td>
+        <td>HTML parsing</td>
+        <td><span class="badge badge-yellow">Partial</span></td>
+        <td>Scraper file exists; verify output after running</td>
+      </tr>
+      <tr>
+        <td><strong>Clearwater Living</strong></td>
+        <td>HTML parsing</td>
+        <td><span class="badge badge-yellow">Partial</span></td>
+        <td>Scraper file exists; verify output after running</td>
+      </tr>
+      <tr>
+        <td><strong>MorningStar Living</strong></td>
+        <td>HTML parsing</td>
+        <td><span class="badge badge-yellow">Partial</span></td>
+        <td>Scraper file exists; verify output after running</td>
+      </tr>
+      <tr>
+        <td><strong>Aspenwood Company</strong></td>
+        <td>HTML parsing</td>
+        <td><span class="badge badge-yellow">Partial</span></td>
+        <td>Scraper file exists; verify output after running</td>
+      </tr>
+    </table>
+
+    <div class="alert alert-info">
+      <strong>Why do scrapers sometimes break?</strong> Websites change their code periodically. If a scraper stops returning data, the operator likely redesigned their website. A developer will need to update the corresponding file in the <code>scrapers/</code> folder.
+    </div>
+
+    <!-- HOW SCRAPING WORKS -->
+    <h2 id="shb-scraping">How Scraping Works</h2>
+
+    <h3>The Process (Step by Step)</h3>
+    <div class="steps">
+      <div class="step"><div class="step-num"></div><div class="step-content"><strong>Click "Scrape All Operators"</strong> — the app launches 8 background threads simultaneously, one per operator.</div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content"><strong>Each scraper fetches data</strong> — using one of three methods: direct API call, HTML parsing, or a headless Chrome browser (Selenium) for JavaScript-heavy sites.</div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content"><strong>Missing coordinates are geocoded</strong> — any community without GPS coordinates is automatically looked up via the US Census Geocoder (batch of up to 1,000 at once), with OpenStreetMap as a fallback.</div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content"><strong>Data is saved to Excel</strong> — each operator gets its own <code>all_communities.xlsx</code> file.</div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content"><strong>Changes are tracked</strong> — the app compares the new data to the previous run. New communities are marked <strong>New</strong>, existing ones get a checkmark <strong>✓</strong>, and removed ones are marked <strong>Removed</strong>. This history is saved in <code>community_tracking.xlsx</code>.</div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content"><strong>Map refreshes</strong> — all communities appear as colored markers on the Mapbox map.</div></div>
+    </div>
+
+    <h3>Change Tracking</h3>
+    <p>Each operator has a <code>community_tracking.xlsx</code> file. Each column is a date a scrape was run. Each row is a community. The cell value tells you the status on that date:</p>
+    <table>
+      <tr><th>Value</th><th>Meaning</th></tr>
+      <tr><td><strong>New</strong></td><td>First time this community appeared in the data</td></tr>
+      <tr><td><strong>✓</strong></td><td>Community was present and active on this date</td></tr>
+      <tr><td><strong>Removed</strong></td><td>Community was in previous data but not found this time</td></tr>
+    </table>
+
+    <!-- APPLICATION TABS -->
+    <h2 id="shb-tabs">Application Tabs</h2>
+
+    <h3>Map Tab</h3>
+    <p>The main tab. Shows all scraped communities as colored dots on a Mapbox map. Each operator has a unique color shown in the legend. You can toggle operators on/off, zoom to a specific state, county, or ZIP code, and click any marker to see the community's full details.</p>
+
+    <h3>Demographics Tab</h3>
+    <p>Merges three Esri demographic radius reports (1-mile, 3-mile, 5-mile) into a single formatted Full Service workbook. Upload the three files, optionally enter an address, and click Merge. The output Excel file is saved to the <code>senior_housing_data/demographics/</code> folder. <em>This is the same functionality now available on the website.</em></p>
+
+    <h3>Market Rankings Tab</h3>
+    <p>Ranks counties, ZIP codes, or minor civil divisions by an opportunity score calculated from US Census data. Select a state, choose geography type, and click Fetch &amp; Rank. The score is a weighted combination of:</p>
+    <ul>
+      <li>Population age 75+ × % households earning $50k+</li>
+      <li>Population age 45–64 × % households earning $100k+</li>
+      <li>Median home value (normalized)</li>
+    </ul>
+    <p>Results are cached in a local SQLite database (<code>geo_stats.db</code>) for 30 days so you don't have to re-fetch from Census every time.</p>
+    <div class="alert alert-warning">
+      <strong>Requires a Census API key.</strong> The key field in <code>config.json</code> is currently empty. Sign up free at <a href="https://api.census.gov/data/key_signup.html">api.census.gov/data/key_signup.html</a> and paste the key into the app's settings or directly into <code>config.json</code>.
+    </div>
+
+    <h3>OM Upload Tab</h3>
+    <p>Upload Offering Memorandum PDFs. Enter the property address, unit count, and notes. The app geocodes the address using Mapbox and pins the OM on the map. Records are stored in <code>om_records.json</code> and PDFs are stored in <code>senior_housing_data/om_pdfs/</code>.</p>
+
+    <!-- WHERE FILES ARE SAVED -->
+    <h2 id="shb-files">Where Files Are Saved</h2>
+    <p>All data is saved locally on the computer running the application. The default data folder is:</p>
+    <pre>C:\Users\{username}\Documents\AGI Analytics Dashboard\senior_housing_data\</pre>
+
+    <table>
+      <tr><th>File / Folder</th><th>What It Contains</th></tr>
+      <tr><td><code>config.json</code></td><td>Mapbox token and Census API key</td></tr>
+      <tr><td><code>geo_stats.db</code></td><td>Cached Census demographic data (SQLite database)</td></tr>
+      <tr><td><code>om_records.json</code></td><td>Offering memorandum metadata</td></tr>
+      <tr><td><code>merrill_gardens/all_communities.xlsx</code></td><td>Latest scraped data for Merrill Gardens</td></tr>
+      <tr><td><code>merrill_gardens/community_tracking.xlsx</code></td><td>Change history for Merrill Gardens</td></tr>
+      <tr><td><code>[operator]/</code></td><td>Same structure repeated for each of the 8 operators</td></tr>
+      <tr><td><code>demographics/</code></td><td>Merged demographic reports (output files)</td></tr>
+      <tr><td><code>om_pdfs/</code></td><td>Uploaded offering memorandum PDFs</td></tr>
+      <tr><td><code>all_operators_export_*.xlsx</code></td><td>Full export of all operators combined</td></tr>
+    </table>
+
+    <div class="alert alert-danger">
+      <strong>Important for handoff:</strong> These files live on Drew's local machine. The entire <code>senior_housing_data</code> folder needs to be copied to the new operator's computer before they start using the app, otherwise all historical data (change tracking, demographics, OMs) will be lost.
+    </div>
+
+    <!-- ACCOUNTS & KEYS -->
+    <h2 id="shb-accounts">Accounts &amp; API Keys Required</h2>
+
+    <div class="card">
+      <div class="card-title">Mapbox</div>
+      <p><strong>Used for:</strong> Map display, geocoding OM addresses</p>
+      <p><strong>Where:</strong> <a href="https://account.mapbox.com">account.mapbox.com</a></p>
+      <p><strong>Current token:</strong> <code>pk.eyJ1IjoiZHJld2Q5NjY2IiwiYSI6ImNtaDVicDI0aDA2ZDMybHB0cTdsYXpnc2cifQ…</code> (stored in <code>config.json</code>)</p>
+      <p><strong>Action needed:</strong> Transfer the Mapbox account to a company email, or create a new account and update the token in <code>config.json</code>. Free tier is sufficient.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">US Census API Key</div>
+      <p><strong>Used for:</strong> Market Rankings tab (demographic data)</p>
+      <p><strong>Where:</strong> <a href="https://api.census.gov/data/key_signup.html">api.census.gov/data/key_signup.html</a></p>
+      <p><strong>Current status:</strong> <span class="badge badge-red">Not configured</span> — the field in <code>config.json</code> is empty</p>
+      <p><strong>Action needed:</strong> Sign up (free) and paste the key into the app settings under Market Rankings, or directly into <code>config.json</code>.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Chrome / ChromeDriver</div>
+      <p><strong>Used for:</strong> Scraping Sunrise Senior Living and Brightview (JavaScript-heavy sites)</p>
+      <p><strong>Where:</strong> Google Chrome must be installed on the computer running the app</p>
+      <p><strong>Action needed:</strong> Make sure Google Chrome is installed. The app manages ChromeDriver automatically via <code>webdriver-manager</code>.</p>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!--  PART 2 — DEMOGRAPHICS WEBSITE                             -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <h2 id="web-overview">Part 2 — Demographics Merge Website</h2>
+
+    <h3>What Is It?</h3>
+    <p>A simple web tool that does exactly what the Demographics tab in the Senior Housing Bot does — but accessible from any browser, on any computer, without installing anything. Users upload their three radius demographic reports, click a button, and download the merged Full Service Excel file instantly.</p>
+    <p><strong>Website URL:</strong> <code>https://demographics-web-production.up.railway.app</code> (or your custom domain once connected)</p>
+    <p><strong>Password:</strong> <code>AGI</code></p>
+
+    <!-- HOW TO USE IT -->
+    <h2 id="web-how">How to Use the Website</h2>
+
+    <div class="steps">
+      <div class="step"><div class="step-num"></div><div class="step-content">Go to the website URL and enter the password <strong>AGI</strong></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content">
+        Choose your upload method:
+        <ul style="margin-top:8px">
+          <li><strong>Upload 3 Files tab</strong> — upload each radius file individually (1-mile, 3-mile, 5-mile)</li>
+          <li><strong>Upload ZIP tab</strong> — if you have all three files in a ZIP, upload that instead. The app detects which file is which automatically based on the filename.</li>
+        </ul>
+      </div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content">Optionally enter the <strong>property address</strong> — this gets written into cell A1 of the Summary tab in the output. If left blank, it's auto-detected from the filename.</div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content">Click <strong>Merge &amp; Download</strong> — the merged Excel file downloads to your computer automatically.</div></div>
+    </div>
+
+    <h3>File Naming Convention</h3>
+    <p>For automatic address detection, name your files like this:</p>
+    <pre>Executive Dashboard - 201 Clintonville Rd - 1 mi.xlsx
+Executive Dashboard - 201 Clintonville Rd - 3 mi.xlsx
+Executive Dashboard - 201 Clintonville Rd - 5 mi.xlsx</pre>
+    <p>The app reads the address between the dashes and writes it to the output automatically.</p>
+
+    <h3>What the Output Contains</h3>
+    <p>The output is a copy of the <strong>Full Service Demographic Template</strong> with data from all three radius reports merged in. Each radius has its own set of tabs:</p>
+    <table>
+      <tr><th>Source Sheet</th><th>1-Mile Tab</th><th>3-Mile Tab</th><th>5-Mile Tab</th></tr>
+      <tr><td>Summary</td><td>1 mile summary tab</td><td>3 mile summary</td><td>5 mile summary</td></tr>
+      <tr><td>Demographic Quick Facts</td><td>1 mile demo quick</td><td>3 mile demo quick</td><td>5 mile demo quick</td></tr>
+      <tr><td>2025</td><td>1 mile 2025</td><td>3 mile 2025</td><td>5 mile 2025</td></tr>
+      <tr><td>2030</td><td>1 mile 2030</td><td>3 mile 2030</td><td>5 mile 2030</td></tr>
+      <tr><td>Income by Age of Household</td><td>1 mile age of HHer</td><td>3 mile age of HHer</td><td>5 mile age of HHer</td></tr>
+    </table>
+    <p>All formatting, merged cells, column widths, and row heights from the source files are preserved in the output.</p>
+
+    <!-- HOW IT WORKS BACKEND -->
+    <h2 id="web-backend">How It Works (Technical)</h2>
+    <p>The website is a Python web application. Here is exactly what happens when you click Merge:</p>
+
+    <div class="steps">
+      <div class="step"><div class="step-num"></div><div class="step-content">Your browser sends the uploaded files to the server (Flask web framework handles this)</div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content">The server saves them to a temporary folder</div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content">The <code>DemographicsMerger</code> class (in <code>merger.py</code>) copies the bundled template, then reads each radius file using <code>openpyxl</code> and copies the sheet data, formatting, merged cells, and column widths into the correct destination tabs</div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content">The merged file is sent back to your browser as a download</div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content">The temporary files are deleted — nothing is stored on the server</div></div>
+    </div>
+
+    <h3>Source Code Files</h3>
+    <table>
+      <tr><th>File</th><th>What It Does</th></tr>
+      <tr><td><code>app.py</code></td><td>The web server. Handles file uploads, routes (/merge, /download), and sends files back to the browser.</td></tr>
+      <tr><td><code>merger.py</code></td><td>The merge logic. Contains the DemographicsMerger class that does all the Excel work.</td></tr>
+      <tr><td><code>templates/index.html</code></td><td>The entire front-end UI — what users see in their browser. Single HTML file with CSS and JavaScript included.</td></tr>
+      <tr><td><code>template/Full_Service_Demographic_Template.xlsx</code></td><td>The bundled template. This is what gets copied and filled in during each merge.</td></tr>
+      <tr><td><code>requirements.txt</code></td><td>List of Python packages the app needs (Flask, openpyxl, gunicorn).</td></tr>
+    </table>
+
+    <!-- HOSTING -->
+    <h2 id="web-hosting">Hosting &amp; Deployment</h2>
+
+    <div class="card">
+      <div class="card-title">Where Is It Hosted?</div>
+      <p>The website runs on <strong>Railway</strong> (<a href="https://railway.app">railway.app</a>). Railway is a cloud hosting platform that runs the Python/Flask app 24/7. The code lives on GitHub and Railway automatically redeploys whenever the code is updated.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">How Auto-Deployment Works</div>
+      <p>Railway is connected to the GitHub repository <strong>DREW2212/demographics-web</strong>. Every time code is pushed to GitHub, Railway detects it and rebuilds the app automatically — usually takes about 2 minutes. No manual steps needed.</p>
+    </div>
+
+    <h3>How to Update the Website</h3>
+    <p>To make any change (new feature, password update, template change):</p>
+    <div class="steps">
+      <div class="step"><div class="step-num"></div><div class="step-content">Edit the relevant file locally in the <code>demographics-web</code> folder on the Desktop</div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content">Open a terminal in that folder and run:<br><code>git add .</code><br><code>git commit -m "describe the change"</code><br><code>git push</code></div></div>
+      <div class="step"><div class="step-num"></div><div class="step-content">Railway picks up the push and redeploys automatically</div></div>
+    </div>
+
+    <h3>How to Change the Password</h3>
+    <p>Open <code>templates/index.html</code> and find this line:</p>
+    <pre>const PASSWORD = 'AGI';</pre>
+    <p>Change <code>AGI</code> to the new password, then push to GitHub.</p>
+
+    <h3>How to Update the Template</h3>
+    <p>Replace the file at <code>template/Full_Service_Demographic_Template.xlsx</code> with the new version. Make sure the sheet names inside it still match the destination tab names in the Sheet Mapping table above. Then push to GitHub.</p>
+
+    <!-- ACCOUNTS NEEDED -->
+    <h2 id="web-accounts">Accounts Needed for the Website</h2>
+
+    <div class="card">
+      <div class="card-title">GitHub — github.com/DREW2212</div>
+      <p><strong>Used for:</strong> Storing the source code. Railway deploys from here.</p>
+      <p><strong>Action needed:</strong> Transfer the GitHub account to a company email or add a company team member as a collaborator on the <code>demographics-web</code> repository.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Railway — railway.app</div>
+      <p><strong>Used for:</strong> Hosting and running the web application.</p>
+      <p><strong>Cost:</strong> Free tier (Hobby plan) — $5/month if usage exceeds free limits.</p>
+      <p><strong>Action needed:</strong> Transfer the Railway account to a company email or invite a team member. Go to Railway → Project Settings → Members → Invite.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Domain Registrar — hosting.com</div>
+      <p><strong>Used for:</strong> The custom domain name.</p>
+      <p><strong>Action needed:</strong> Transfer domain ownership or update the account email to a company address.</p>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!--  PART 3 — HANDOFF CHECKLIST                                -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+
+    <h2 id="handoff-accounts">Part 3 — Handoff Checklist</h2>
+
+    <h2 id="handoff-accounts" style="border:none;margin-top:0;padding-top:0">Accounts to Transfer</h2>
+
+    <table>
+      <tr><th>Service</th><th>Used By</th><th>Action</th><th>Status</th></tr>
+      <tr>
+        <td><strong>Mapbox</strong><br><small>account.mapbox.com</small></td>
+        <td>Senior Housing Bot (maps + geocoding)</td>
+        <td>Transfer account to company email or create new account and update token in config.json</td>
+        <td><span class="badge badge-yellow">Needs Transfer</span></td>
+      </tr>
+      <tr>
+        <td><strong>GitHub</strong><br><small>github.com/DREW2212</small></td>
+        <td>Demographics Website (code storage)</td>
+        <td>Add company team member as collaborator, or transfer repo ownership</td>
+        <td><span class="badge badge-yellow">Needs Transfer</span></td>
+      </tr>
+      <tr>
+        <td><strong>Railway</strong><br><small>railway.app</small></td>
+        <td>Demographics Website (hosting)</td>
+        <td>Invite company team member or transfer account</td>
+        <td><span class="badge badge-yellow">Needs Transfer</span></td>
+      </tr>
+      <tr>
+        <td><strong>hosting.com</strong></td>
+        <td>Custom domain name</td>
+        <td>Transfer domain ownership to company</td>
+        <td><span class="badge badge-yellow">Needs Transfer</span></td>
+      </tr>
+      <tr>
+        <td><strong>Census API Key</strong><br><small>api.census.gov</small></td>
+        <td>Senior Housing Bot (Market Rankings)</td>
+        <td>Sign up free and add key to config.json</td>
+        <td><span class="badge badge-red">Not Set Up</span></td>
+      </tr>
+    </table>
+
+    <!-- FILES TO TRANSFER -->
+    <h2 id="handoff-files">Files to Transfer</h2>
+
+    <table>
+      <tr><th>What</th><th>Where It Lives</th><th>Why It Matters</th></tr>
+      <tr>
+        <td><strong>senior_housing_data folder</strong></td>
+        <td><code>C:\Users\drewd\Documents\AGI Analytics Dashboard\senior_housing_data\</code></td>
+        <td>All historical scraped data, change tracking, demographic outputs, OMs. Without this, all history is lost.</td>
+      </tr>
+      <tr>
+        <td><strong>Senior Housing Bot application</strong></td>
+        <td><code>C:\Users\drewd\OneDrive\Desktop\Senior Housing Bot\</code></td>
+        <td>The full desktop application including source code and the pre-built .exe</td>
+      </tr>
+      <tr>
+        <td><strong>Demographics Web App</strong></td>
+        <td><code>C:\Users\drewd\OneDrive\Desktop\demographics-web\</code> and GitHub</td>
+        <td>Source code for the website — already on GitHub at DREW2212/demographics-web</td>
+      </tr>
+      <tr>
+        <td><strong>Demographic Template</strong></td>
+        <td><code>Senior Housing Bot\senior_housing_data\demographics\Full_Service_Demographic_Template.xlsx</code></td>
+        <td>The master template used for merging. Already bundled in the website but keep a copy.</td>
+      </tr>
+      <tr>
+        <td><strong>config.json</strong></td>
+        <td><code>Senior Housing Bot\senior_housing_data\config.json</code></td>
+        <td>Contains the Mapbox token. Must be on the new computer for the app to work.</td>
+      </tr>
+    </table>
+
+    <!-- FULL CHECKLIST -->
+    <h2 id="handoff-checklist">Full Handoff Checklist</h2>
+
+    <div class="card">
+      <div class="card-title">Before You Leave — Complete These</div>
+      <ul style="list-style:none;padding:0">
+        <li style="padding:8px 0;border-bottom:1px solid #e5e7eb">&#9744; Copy the entire <code>senior_housing_data</code> folder to the new operator's computer (or a shared network drive)</li>
+        <li style="padding:8px 0;border-bottom:1px solid #e5e7eb">&#9744; Copy the entire <code>Senior Housing Bot</code> folder to the new operator's computer</li>
+        <li style="padding:8px 0;border-bottom:1px solid #e5e7eb">&#9744; Transfer or share the Mapbox account</li>
+        <li style="padding:8px 0;border-bottom:1px solid #e5e7eb">&#9744; Sign up for a Census API key and add it to <code>config.json</code></li>
+        <li style="padding:8px 0;border-bottom:1px solid #e5e7eb">&#9744; Add the new operator as a collaborator on the GitHub repo (github.com/DREW2212/demographics-web → Settings → Collaborators)</li>
+        <li style="padding:8px 0;border-bottom:1px solid #e5e7eb">&#9744; Transfer or share the Railway account</li>
+        <li style="padding:8px 0;border-bottom:1px solid #e5e7eb">&#9744; Transfer the domain at hosting.com</li>
+        <li style="padding:8px 0;border-bottom:1px solid #e5e7eb">&#9744; Make sure Google Chrome is installed on the computer running the Senior Housing Bot</li>
+        <li style="padding:8px 0;border-bottom:1px solid #e5e7eb">&#9744; Share this manual URL with the team</li>
+        <li style="padding:8px 0">&#9744; Do a test run of the scraper together before leaving to confirm everything works</li>
+      </ul>
+    </div>
+
+    <div class="alert alert-success">
+      <strong>Questions or issues?</strong> The full source code for both the Senior Housing Bot and the demographics website is available on GitHub at <strong>github.com/DREW2212</strong>. A developer familiar with Python can make changes or fix scrapers as needed.
+    </div>
+
+    <br><br>
+
+  </main>
+</div>
+
+<script>
+  // Highlight active sidebar link on scroll
+  const links = document.querySelectorAll('.sidebar a[href^="#"]');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`.sidebar a[href="#${e.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  document.querySelectorAll('[id]').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
