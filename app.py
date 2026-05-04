@@ -97,5 +97,39 @@ def merge():
         return jsonify({'error': str(e)}), 500
 
 
+@app.route('/download/template')
+def download_template():
+    if not DEFAULT_TEMPLATE.exists():
+        return jsonify({'error': 'Template not found'}), 404
+    return send_file(
+        str(DEFAULT_TEMPLATE),
+        as_attachment=True,
+        download_name='Full_Service_Demographic_Template.xlsx',
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+
+
+@app.route('/download/source')
+def download_source():
+    root = Path(__file__).parent
+    files = ['app.py', 'merger.py', 'requirements.txt', 'Procfile', 'runtime.txt', 'README.md']
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as zf:
+        for fname in files:
+            fpath = root / fname
+            if fpath.exists():
+                zf.write(fpath, fname)
+        template_path = root / 'template' / 'Full_Service_Demographic_Template.xlsx'
+        if template_path.exists():
+            zf.write(template_path, 'template/Full_Service_Demographic_Template.xlsx')
+    buf.seek(0)
+    return send_file(
+        buf,
+        as_attachment=True,
+        download_name='demographics-web-source.zip',
+        mimetype='application/zip'
+    )
+
+
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

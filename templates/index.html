@@ -153,6 +153,18 @@
     .tab-content.active { display: block; }
 
     .divider { border: none; border-top: 1px solid #e5e7eb; margin: 22px 0; }
+
+    .downloads-section { margin-top: 4px; }
+    .downloads-label { font-size: .85rem; font-weight: 600; color: #374151; margin-bottom: 10px; }
+    .downloads-row { display: flex; gap: 10px; flex-wrap: wrap; }
+    .dl-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 9px 16px; border-radius: 8px;
+      border: 1.5px solid #d1d5db; background: #f9fafb;
+      color: #374151; font-size: .85rem; font-weight: 500;
+      text-decoration: none; transition: all .2s;
+    }
+    .dl-btn:hover { border-color: #4f46e5; color: #4f46e5; background: #eef2ff; }
   </style>
 </head>
 <body>
@@ -245,6 +257,21 @@
 
     <button class="merge-btn" id="merge-btn" onclick="submitMerge()">Merge &amp; Download</button>
     <div class="status-bar" id="status-bar"></div>
+
+    <hr class="divider" />
+
+    <!-- Downloads section -->
+    <div class="downloads-section">
+      <div class="downloads-label">Downloads</div>
+      <div class="downloads-row">
+        <a class="dl-btn" href="/download/template" download>
+          &#128196; Demographic Template (.xlsx)
+        </a>
+        <a class="dl-btn" href="/download/source" download>
+          &#128230; Full Source Code (.zip)
+        </a>
+      </div>
+    </div>
   </div>
 </div>
 
