@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Demographics Merge Tool</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    /* ── Login screen ── */
+    #login-screen {
+      background: #fff;
+      border-radius: 16px;
+      padding: 48px 40px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.10);
+      width: 100%;
+      max-width: 380px;
+      text-align: center;
+    }
+    #login-screen h1 { font-size: 1.5rem; color: #1a1a2e; margin-bottom: 6px; }
+    #login-screen p  { color: #666; font-size: .9rem; margin-bottom: 28px; }
+    #login-screen input {
+      width: 100%; padding: 12px 16px;
+      border: 1.5px solid #ddd; border-radius: 8px;
+      font-size: 1rem; outline: none; margin-bottom: 12px;
+      transition: border-color .2s;
+    }
+    #login-screen input:focus { border-color: #4f46e5; }
+    #login-error { color: #dc2626; font-size: .85rem; margin-bottom: 10px; min-height: 18px; }
+    #login-btn {
+      width: 100%; padding: 12px;
+      background: #4f46e5; color: #fff; border: none;
+      border-radius: 8px; font-size: 1rem; font-weight: 600;
+      cursor: pointer; transition: background .2s;
+    }
+    #login-btn:hover { background: #4338ca; }
+
+    /* ── Main app ── */
+    #app-screen { display: none; width: 100%; max-width: 720px; }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 36px 40px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.10);
+    }
+
+    .header { margin-bottom: 28px; }
+    .header h1 { font-size: 1.6rem; color: #1a1a2e; }
+    .header p  { color: #666; margin-top: 6px; font-size: .95rem; }
+
+    /* tabs */
+    .tabs { display: flex; gap: 8px; margin-bottom: 28px; }
+    .tab-btn {
+      padding: 8px 20px; border-radius: 8px; border: 1.5px solid #e5e7eb;
+      background: #f9fafb; color: #555; font-size: .9rem; cursor: pointer;
+      font-weight: 500; transition: all .2s;
+    }
+    .tab-btn.active {
+      background: #4f46e5; color: #fff; border-color: #4f46e5;
+    }
+
+    /* upload zones */
+    .upload-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+    .upload-zone {
+      border: 2px dashed #d1d5db; border-radius: 12px;
+      padding: 20px 10px; text-align: center; cursor: pointer;
+      transition: all .2s; position: relative; background: #fafafa;
+    }
+    .upload-zone:hover, .upload-zone.drag-over { border-color: #4f46e5; background: #eef2ff; }
+    .upload-zone.filled { border-color: #16a34a; background: #f0fdf4; border-style: solid; }
+    .upload-zone input[type=file] { display: none; }
+    .upload-zone .icon { font-size: 1.8rem; margin-bottom: 6px; }
+    .upload-zone .label { font-size: .8rem; font-weight: 600; color: #374151; }
+    .upload-zone .filename { font-size: .72rem; color: #6b7280; margin-top: 4px; word-break: break-all; }
+    .upload-zone .check { display: none; color: #16a34a; font-size: 1.1rem; }
+    .upload-zone.filled .check { display: block; }
+    .upload-zone.filled .icon { display: none; }
+
+    .zip-zone {
+      border: 2px dashed #d1d5db; border-radius: 12px;
+      padding: 28px; text-align: center; cursor: pointer;
+      transition: all .2s; background: #fafafa;
+    }
+    .zip-zone:hover, .zip-zone.drag-over { border-color: #4f46e5; background: #eef2ff; }
+    .zip-zone.filled { border-color: #16a34a; background: #f0fdf4; border-style: solid; }
+    .zip-zone input[type=file] { display: none; }
+    .zip-zone .icon { font-size: 2.2rem; margin-bottom: 8px; }
+    .zip-zone .label { font-size: .95rem; font-weight: 600; color: #374151; }
+    .zip-zone .sub { font-size: .82rem; color: #6b7280; margin-top: 4px; }
+
+    .template-section { margin-bottom: 20px; }
+    .template-label { font-size: .85rem; font-weight: 600; color: #374151; margin-bottom: 8px; }
+    .template-row { display: flex; align-items: center; gap: 10px; }
+    .template-badge {
+      background: #d1fae5; color: #065f46; border-radius: 6px;
+      padding: 4px 10px; font-size: .78rem; font-weight: 600;
+    }
+    .template-upload-btn {
+      padding: 6px 14px; border-radius: 6px; border: 1.5px solid #d1d5db;
+      background: #fff; color: #374151; font-size: .82rem; cursor: pointer;
+      transition: all .2s;
+    }
+    .template-upload-btn:hover { border-color: #4f46e5; color: #4f46e5; }
+    #template-input { display: none; }
+    #template-name { font-size: .8rem; color: #6b7280; }
+
+    .address-field { margin-bottom: 20px; }
+    .address-field label { display: block; font-size: .85rem; font-weight: 600; color: #374151; margin-bottom: 6px; }
+    .address-field input {
+      width: 100%; padding: 10px 14px; border: 1.5px solid #d1d5db;
+      border-radius: 8px; font-size: .9rem; outline: none; transition: border-color .2s;
+    }
+    .address-field input:focus { border-color: #4f46e5; }
+    .address-field .hint { font-size: .77rem; color: #9ca3af; margin-top: 4px; }
+
+    .merge-btn {
+      width: 100%; padding: 14px;
+      background: #4f46e5; color: #fff; border: none;
+      border-radius: 10px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: all .2s; position: relative;
+    }
+    .merge-btn:hover:not(:disabled) { background: #4338ca; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79,70,229,.4); }
+    .merge-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .status-bar {
+      margin-top: 16px; padding: 12px 16px; border-radius: 8px;
+      font-size: .88rem; display: none;
+    }
+    .status-bar.success { background: #d1fae5; color: #065f46; display: block; }
+    .status-bar.error   { background: #fee2e2; color: #991b1b; display: block; }
+    .status-bar.loading { background: #eef2ff; color: #3730a3; display: block; }
+
+    .spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin .7s linear infinite; margin-right: 6px; vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .divider { border: none; border-top: 1px solid #e5e7eb; margin: 22px 0; }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <h1>Demographics Merge Tool</h1>
+  <p>Enter the password to continue</p>
+  <input type="password" id="password-input" placeholder="Password" />
+  <div id="login-error"></div>
+  <button id="login-btn" onclick="checkPassword()">Enter</button>
+</div>
+
+<!-- MAIN APP -->
+<div id="app-screen">
+  <div class="card">
+    <div class="header">
+      <h1>Demographics Merge Tool</h1>
+      <p>Upload 1-mile, 3-mile, and 5-mile radius reports to generate a merged Full Service workbook.</p>
+    </div>
+
+    <!-- Template section -->
+    <div class="template-section">
+      <div class="template-label">Template</div>
+      <div class="template-row">
+        {% if has_default_template %}
+          <span class="template-badge">&#10003; Default template loaded</span>
+          <button class="template-upload-btn" onclick="document.getElementById('template-input').click()">Use custom template</button>
+        {% else %}
+          <button class="template-upload-btn" onclick="document.getElementById('template-input').click()">Upload template (.xlsx)</button>
+        {% endif %}
+        <span id="template-name"></span>
+        <input type="file" id="template-input" accept=".xlsx" onchange="setTemplate(this)" />
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- Upload tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('individual', this)">Upload 3 Files</button>
+      <button class="tab-btn" onclick="switchTab('zip', this)">Upload ZIP</button>
+    </div>
+
+    <!-- Individual files tab -->
+    <div id="tab-individual" class="tab-content active">
+      <div class="upload-grid">
+        <div class="upload-zone" id="zone-1" onclick="triggerUpload('file-1')" ondragover="onDragOver(event,'zone-1')" ondragleave="onDragLeave('zone-1')" ondrop="onDrop(event,'file-1','zone-1')">
+          <input type="file" id="file-1" accept=".xlsx" onchange="setFile(this,'zone-1','label-1')" />
+          <div class="icon">&#128196;</div>
+          <div class="check">&#10003;</div>
+          <div class="label">1-Mile Report</div>
+          <div class="filename" id="label-1">Click or drag file here</div>
+        </div>
+        <div class="upload-zone" id="zone-3" onclick="triggerUpload('file-3')" ondragover="onDragOver(event,'zone-3')" ondragleave="onDragLeave('zone-3')" ondrop="onDrop(event,'file-3','zone-3')">
+          <input type="file" id="file-3" accept=".xlsx" onchange="setFile(this,'zone-3','label-3')" />
+          <div class="icon">&#128196;</div>
+          <div class="check">&#10003;</div>
+          <div class="label">3-Mile Report</div>
+          <div class="filename" id="label-3">Click or drag file here</div>
+        </div>
+        <div class="upload-zone" id="zone-5" onclick="triggerUpload('file-5')" ondragover="onDragOver(event,'zone-5')" ondragleave="onDragLeave('zone-5')" ondrop="onDrop(event,'file-5','zone-5')">
+          <input type="file" id="file-5" accept=".xlsx" onchange="setFile(this,'zone-5','label-5')" />
+          <div class="icon">&#128196;</div>
+          <div class="check">&#10003;</div>
+          <div class="label">5-Mile Report</div>
+          <div class="filename" id="label-5">Click or drag file here</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZIP tab -->
+    <div id="tab-zip" class="tab-content">
+      <div class="zip-zone" id="zone-zip" onclick="triggerUpload('file-zip')" ondragover="onDragOver(event,'zone-zip')" ondragleave="onDragLeave('zone-zip')" ondrop="onDrop(event,'file-zip','zone-zip')">
+        <input type="file" id="file-zip" accept=".zip" onchange="setZip(this,'zone-zip')" />
+        <div class="icon">&#128194;</div>
+        <div class="label" id="zip-label">Click or drag your ZIP file here</div>
+        <div class="sub">ZIP should contain the 1-mile, 3-mile, and 5-mile .xlsx files</div>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- Address -->
+    <div class="address-field">
+      <label>Property Address <span style="font-weight:400;color:#9ca3af">(optional)</span></label>
+      <input type="text" id="address-input" placeholder="e.g. 201 Clintonville Rd" />
+      <div class="hint">Auto-detected from filename if left blank. Written to Summary tab A1 in output.</div>
+    </div>
+
+    <button class="merge-btn" id="merge-btn" onclick="submitMerge()">Merge &amp; Download</button>
+    <div class="status-bar" id="status-bar"></div>
+  </div>
+</div>
+
+<script>
+  const PASSWORD = 'AGI';
+
+  // ── Auth ──
+  document.getElementById('password-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') checkPassword();
+  });
+
+  function checkPassword() {
+    const val = document.getElementById('password-input').value;
+    if (val === PASSWORD) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app-screen').style.display = 'block';
+    } else {
+      document.getElementById('login-error').textContent = 'Incorrect password. Try again.';
+      document.getElementById('password-input').value = '';
+      document.getElementById('password-input').focus();
+    }
+  }
+
+  // ── Tabs ──
+  let activeTab = 'individual';
+  function switchTab(tab, btn) {
+    activeTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`tab-${tab}`).classList.add('active');
+  }
+
+  // ── File helpers ──
+  function triggerUpload(id) { document.getElementById(id).click(); }
+
+  function setFile(input, zoneId, labelId) {
+    const f = input.files[0];
+    if (!f) return;
+    document.getElementById(zoneId).classList.add('filled');
+    document.getElementById(labelId).textContent = f.name;
+  }
+
+  function setZip(input, zoneId) {
+    const f = input.files[0];
+    if (!f) return;
+    document.getElementById(zoneId).classList.add('filled');
+    document.getElementById('zip-label').textContent = f.name;
+  }
+
+  function setTemplate(input) {
+    const f = input.files[0];
+    if (!f) return;
+    document.getElementById('template-name').textContent = f.name;
+  }
+
+  // ── Drag & drop ──
+  function onDragOver(e, zoneId) {
+    e.preventDefault();
+    document.getElementById(zoneId).classList.add('drag-over');
+  }
+  function onDragLeave(zoneId) {
+    document.getElementById(zoneId).classList.remove('drag-over');
+  }
+  function onDrop(e, inputId, zoneId) {
+    e.preventDefault();
+    document.getElementById(zoneId).classList.remove('drag-over');
+    const dt = e.dataTransfer;
+    if (dt.files.length) {
+      const input = document.getElementById(inputId);
+      input.files = dt.files;
+      input.dispatchEvent(new Event('change'));
+    }
+  }
+
+  // ── Submit ──
+  async function submitMerge() {
+    const btn = document.getElementById('merge-btn');
+    const bar = document.getElementById('status-bar');
+
+    const fd = new FormData();
+
+    // Template
+    const tmpl = document.getElementById('template-input').files[0];
+    if (tmpl) fd.append('template', tmpl);
+
+    // Address
+    const addr = document.getElementById('address-input').value.trim();
+    if (addr) fd.append('address', addr);
+
+    if (activeTab === 'zip') {
+      const zip = document.getElementById('file-zip').files[0];
+      if (!zip) { showStatus('error', 'Please upload a ZIP file.'); return; }
+      fd.append('zip_file', zip);
+    } else {
+      const f1 = document.getElementById('file-1').files[0];
+      const f3 = document.getElementById('file-3').files[0];
+      const f5 = document.getElementById('file-5').files[0];
+      if (!f1 || !f3 || !f5) { showStatus('error', 'Please upload all three radius files.'); return; }
+      fd.append('mile_1', f1);
+      fd.append('mile_3', f3);
+      fd.append('mile_5', f5);
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Merging...';
+    showStatus('loading', 'Processing files, please wait...');
+
+    try {
+      const resp = await fetch('/merge', { method: 'POST', body: fd });
+
+      if (!resp.ok) {
+        const data = await resp.json();
+        showStatus('error', data.error || 'Merge failed.');
+        return;
+      }
+
+      // Trigger download
+      const blob = await resp.blob();
+      const cd = resp.headers.get('Content-Disposition') || '';
+      const nameMatch = cd.match(/filename\*?=(?:UTF-8'')?["']?([^"';\n]+)/i);
+      const filename = nameMatch ? decodeURIComponent(nameMatch[1]) : 'merged_demographics.xlsx';
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showStatus('success', `Done! Downloaded: ${filename}`);
+    } catch (err) {
+      showStatus('error', `Error: ${err.message}`);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = 'Merge &amp; Download';
+    }
+  }
+
+  function showStatus(type, msg) {
+    const bar = document.getElementById('status-bar');
+    bar.className = `status-bar ${type}`;
+    bar.textContent = msg;
+    bar.style.display = 'block';
+  }
+</script>
+</body>
+</html>
